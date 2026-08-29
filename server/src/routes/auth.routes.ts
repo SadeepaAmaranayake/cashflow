@@ -9,6 +9,7 @@ import {
   loginSchema,
   registerSchema,
 } from "../validation/auth.schemas.js";
+import { register } from "../controllers/auth.controller.js";
 
 const authRouter = Router();
 

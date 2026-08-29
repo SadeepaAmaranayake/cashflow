@@ -1,13 +1,9 @@
-import {
-  type InferSchemaType,
+import mongoose, {
+  type InferSchemaType,//InferSchemaType and Model remain named imports because they are type-only imports and disappear when TypeScript runs.
   type Model,
-  model,
-  models,
-  Schema,
 } from "mongoose";
 
-const userSchema = new Schema(
-  {
+const userSchema = new mongoose.Schema(  {
     name: {
       type: String,
       trim: true,
@@ -77,7 +73,9 @@ const userSchema = new Schema(
 
 export type User = InferSchemaType<typeof userSchema>;
 
-const existingUserModel = models.User as Model<User> | undefined;
+const existingUserModel = mongoose.models.User as
+  | Model<User>
+  | undefined;
 
 export const UserModel: Model<User> =
-  existingUserModel ?? model<User>("User", userSchema);
+  existingUserModel ?? mongoose.model<User>("User", userSchema);
