@@ -32,3 +32,37 @@ export function signAccessToken(userId: string): string {
     JWT_SIGN_OPTIONS,
   );
 }
+
+export interface VerifiedAccessToken {
+  userId: string;
+}
+
+export function verifyAccessToken(
+  token: string,
+): VerifiedAccessToken {
+  const decoded = jwt.verify(
+    token,
+    getJwtSecret(),
+    {
+      algorithms: ["HS256"],//prevents verification with an unexpected signing algorithm.
+    },
+  );
+
+  if (
+    typeof decoded === "string" ||
+    typeof decoded.userId !== "string" ||
+    decoded.userId.length === 0
+  ) {
+    throw new Error("Token does not contain a valid userId");
+  }
+
+  return {
+    userId: decoded.userId,
+  };
+}
+// jwt.verify(...)
+// does more than decode the token. It checks:
+// - The signature.
+// - The signing secret.
+// - The allowed algorithm.
+// - The exp expiration claim.
