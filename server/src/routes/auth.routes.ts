@@ -1,37 +1,28 @@
 import { Router } from "express";
 import {
+  getCurrentUser,
   login,
   register,
 } from "../controllers/auth.controller.js";
 import { requireAuthentication } from "../middleware/auth.middleware.js";
+import { asyncHandler } from "../utils/async-handler.js";
 
 const authRouter = Router();
 
-// Public routes
+authRouter.post(
+  "/register",
+  asyncHandler(register),
+);
 
-authRouter.post("/register", register);
-authRouter.post("/login", login);
-
-// Protected route
+authRouter.post(
+  "/login",
+  asyncHandler(login),
+);
 
 authRouter.get(
   "/me",
   requireAuthentication,
-  (request, response) => {
-    if (!request.auth) {
-      response.status(401).json({
-        status: "error",
-        message: "Unauthorized",
-      });
-
-      return;
-    }
-
-    response.status(200).json({
-      userId: request.auth.userId,
-    });
-  },
+  asyncHandler(getCurrentUser),
 );
-
 
 export default authRouter;

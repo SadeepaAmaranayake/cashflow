@@ -1,115 +1,66 @@
 import type { Request, Response } from "express";
+import mongoose from "mongoose";
+import { AppError } from "../errors/app-error.js";
 import { UserModel } from "../models/user.model.js";
 import {
   comparePassword,
-  hashPassword 
+  hashPassword,
 } from "../utils/password.js";
 import { signAccessToken } from "../utils/token.js";
 import {
   loginSchema,
-  registerSchema
+  registerSchema,
 } from "../validation/auth.schemas.js";
-
-function isDuplicateKeyError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === 11000
-  );
-}
 
 export async function register(
   request: Request,
   response: Response,
 ): Promise<void> {
-  const result = registerSchema.safeParse(request.body);
-
-  if (!result.success) {
-    response.status(400).json({
-      status: "error",
-      errors: result.error.flatten(),
-    });
-
-    return;
-  }
-
-  const input = result.data;
+  const input = registerSchema.parse(request.body);
 
   const existingUser = await UserModel.exists({
     email: input.email,
   });
 
   if (existingUser) {
-    response.status(409).json({
-      status: "error",
-      message: "An account with this email already exists",
-    });
-
-    return;
+    throw new AppError(
+      409,
+      "An account with this email already exists",
+    );
   }
 
   const passwordHash = await hashPassword(input.password);
 
-  try {
-    const user = await UserModel.create({
-      name: input.name,
-      email: input.email,
-      passwordHash,
-    });
+  const user = await UserModel.create({
+    name: input.name,
+    email: input.email,
+    passwordHash,
+  });
 
-    const token = signAccessToken(user.id);
+  const token = signAccessToken(user.id);
 
-    response.status(201).json({
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    });
-  } catch (error) {
-    if (isDuplicateKeyError(error)) {
-      response.status(409).json({
-        status: "error",
-        message: "An account with this email already exists",
-      });
-
-      return;
-    }
-
-    throw error;
-  }
+  response.status(201).json({
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    },
+  });
 }
 
 export async function login(
   request: Request,
   response: Response,
 ): Promise<void> {
-  const result = loginSchema.safeParse(request.body);
-
-  if (!result.success) {
-    response.status(400).json({
-      status: "error",
-      errors: result.error.flatten(),
-    });
-
-    return;
-  }
-
-  const input = result.data;
+  const input = loginSchema.parse(request.body);
 
   const user = await UserModel.findOne({
     email: input.email,
   }).select("+passwordHash");
 
   if (!user || typeof user.passwordHash !== "string") {
-    response.status(401).json({
-      status: "error",
-      message: "Invalid credentials",
-    });
-
-    return;
+    throw new AppError(401, "Invalid credentials");
   }
 
   const passwordMatches = await comparePassword(
@@ -118,12 +69,7 @@ export async function login(
   );
 
   if (!passwordMatches) {
-    response.status(401).json({
-      status: "error",
-      message: "Invalid credentials",
-    });
-
-    return;
+    throw new AppError(401, "Invalid credentials");
   }
 
   const token = signAccessToken(user.id);
@@ -134,6 +80,48 @@ export async function login(
       id: user.id,
       name: user.name,
       email: user.email,
+    },
+  });
+}
+
+export async function getCurrentUser(
+  request: Request,
+  response: Response,
+): Promise<void> {
+  const userId = request.auth?.userId;
+
+  if (!userId || !mongoose.isValidObjectId(userId)) {
+    throw new AppError(401, "Unauthorized");
+  }
+
+  const user = await UserModel.findById(userId).select(
+    [
+      "name",
+      "email",
+      "currency",
+      "timezone",
+      "reminderHour",
+      "reminderMinute",
+      "createdAt",
+      "updatedAt",
+    ].join(" "),
+  );
+
+  if (!user) {
+    throw new AppError(401, "Unauthorized");
+  }
+
+  response.status(200).json({
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      currency: user.currency,
+      timezone: user.timezone,
+      reminderHour: user.reminderHour,
+      reminderMinute: user.reminderMinute,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     },
   });
 }

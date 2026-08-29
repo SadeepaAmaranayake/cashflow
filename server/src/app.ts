@@ -1,6 +1,8 @@
 import cors from "cors";//enables cross-origin requests. This allows every origin; restrict it later if needed.
 import express from "express";
 import helmet from "helmet";//adds common HTTP security headers.
+import { AppError } from "./errors/app-error.js";
+import { errorHandler } from "./middleware/error.middleware.js";
 import authRouter from "./routes/auth.routes.js";
 
 const app = express();
@@ -17,11 +19,13 @@ app.get("/api/health", (_request, response) => {
   });
 });
 
-app.use((_request, response) => {
-  response.status(404).json({
-    status: "error",
-    message: "Route not found",
-  });
+// Runs only when no real route matched.
+app.use((_request, _response, next) => {
+  next(new AppError(404, "Route not found"));
 });
+
+// Error middleware must be last.
+app.use(errorHandler);
+
 
 export default app;
