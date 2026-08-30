@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRANSACTION_CATEGORIES } from "../constants/transaction-categories.js";
 import { TRANSACTION_TYPES } from "../models/transaction.model.js";
 
 const currentYear = new Date().getUTCFullYear();
@@ -53,3 +54,55 @@ export const listTransactionsQuerySchema = z
 export type ListTransactionsQuery = z.infer<
   typeof listTransactionsQuerySchema
 >;
+
+export const updateTransactionSchema = z
+  .object({
+    type: z
+      .enum(TRANSACTION_TYPES)
+      .optional(),
+
+    amountMinor: z
+      .number()
+      .refine(
+        (value) =>
+          Number.isSafeInteger(value) &&
+          value > 0,
+        "amountMinor must be a positive safe integer",
+      )
+      .optional(),
+
+    category: z
+      .enum(TRANSACTION_CATEGORIES)
+      .optional(),
+
+    description: z
+      .string()
+      .trim()
+      .max(120)
+      .optional(),
+
+    transactionDate: z.iso
+      .datetime({
+        offset: true,
+      })
+      .transform((value) => new Date(value))
+      .optional(),
+
+    reviewed: z
+      .boolean()
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (input) => Object.keys(input).length > 0,
+    {
+      message: "At least one update field is required",
+    },
+  );
+
+// Every field is optional because PATCH performs a partial update.
+// The final .refine() rejects an empty {} body.
+// .strict() rejects fields such as userId, _id, createdAt, updatedAt and passwordHash.
+// amountMinor must already be an integer. Do not accept decimal money here.
+// transactionDate must be an ISO timestamp and is converted into a JavaScript Date.
+// Only the six fields required by the specification are accepted.

@@ -1,15 +1,29 @@
 import { Router } from "express";
-import { listTransactions } from "../controllers/transaction.controller.js";
+import {
+  deleteTransaction,
+  listTransactions,
+  updateTransaction,
+} from "../controllers/transaction.controller.js";
 import { requireAuthentication } from "../middleware/auth.middleware.js";
 import { asyncHandler } from "../utils/async-handler.js";
 
-const transactionRouter = Router();//Protects every transaction route declared after it.do not need to repeat the middleware for every transaction endpoint.
+const transactionRouter = Router();
 
 transactionRouter.use(requireAuthentication);
 
 transactionRouter.get(
   "/",
   asyncHandler(listTransactions),
+);
+
+transactionRouter.patch(
+  "/:id",
+  asyncHandler(updateTransaction),
+);
+
+transactionRouter.delete(
+  "/:id",
+  asyncHandler(deleteTransaction),
 );
 
 export default transactionRouter;

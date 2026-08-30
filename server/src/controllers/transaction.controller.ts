@@ -7,7 +7,8 @@ import {
   TransactionModel,
   type Transaction,
 } from "../models/transaction.model.js";
-import { listTransactionsQuerySchema } from "../validation/transaction.schema.js";
+import { listTransactionsQuerySchema,  updateTransactionSchema } from "../validation/transaction.schema.js";
+
 
 export async function listTransactions(
   request: Request,
@@ -99,4 +100,119 @@ export async function listTransactions(
       totalPages,
     },
   });
+}
+const OBJECT_ID_PATTERN = /^[0-9a-fA-F]{24}$/;
+
+function parseTransactionId(
+  value: string | string[] | undefined,
+): mongoose.Types.ObjectId {
+  if (
+    typeof value !== "string" ||
+    !OBJECT_ID_PATTERN.test(value)
+  ) {
+    throw new AppError(
+      400,
+      "Invalid transaction ID",
+    );
+  }
+
+  return new mongoose.Types.ObjectId(value);
+}
+
+function getAuthenticatedUserId(
+  request: Request,
+): mongoose.Types.ObjectId {
+  const userId = request.auth?.userId;
+
+  if (
+    !userId ||
+    !OBJECT_ID_PATTERN.test(userId)
+  ) {
+    throw new AppError(401, "Unauthorized");
+  }
+
+  return new mongoose.Types.ObjectId(userId);
+}
+//Mongoose normally attempts to cast IDs during a query.
+// A malformed ID can cause a CastError.
+// Validating before querying guarantees malformed route IDs become 400.
+// A malformed token user ID becomes 401.
+// Converting both values once avoids repeated implicit casting.
+
+export async function updateTransaction(
+  request: Request,
+  response: Response,
+): Promise<void> {
+  const transactionId = parseTransactionId(
+    request.params.id,
+  );
+
+  const userId = getAuthenticatedUserId(request);
+
+  const input = updateTransactionSchema.parse(
+    request.body,
+  );
+
+  const transaction =
+    await TransactionModel.findOneAndUpdate(
+      {
+        _id: transactionId,
+        userId,
+      },
+      {
+        $set: input,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+  if (!transaction) {
+    throw new AppError(
+      404,
+      "Transaction not found",
+    );
+  }
+
+  response.status(200).json({
+    item: {
+      id: transaction.id,
+      type: transaction.type,
+      amountMinor: transaction.amountMinor,
+      category: transaction.category,
+      description: transaction.description,
+      transactionDate:
+        transaction.transactionDate,
+      reviewed: transaction.reviewed,
+      createdAt: transaction.createdAt,
+      updatedAt: transaction.updatedAt,
+    },
+  });
+}
+
+export async function deleteTransaction(
+  request: Request,
+  response: Response,
+): Promise<void> {
+  const transactionId = parseTransactionId(
+    request.params.id,
+  );
+
+  const userId = getAuthenticatedUserId(request);
+
+  const transaction =
+    await TransactionModel.findOneAndDelete({
+      _id: transactionId,
+      userId,
+    });
+
+  if (!transaction) {
+    throw new AppError(
+      404,
+      "Transaction not found",
+    );
+  }
+
+  response.status(204).send();
 }
