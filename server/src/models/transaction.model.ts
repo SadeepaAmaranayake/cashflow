@@ -1,24 +1,16 @@
 import mongoose, { type Model } from "mongoose";
+import {
+  TRANSACTION_CATEGORIES,
+  type TransactionCategory,
+} from "../constants/transaction-categories.js";
 
 export const TRANSACTION_TYPES = [
   "income",
   "expense",
-] as const;//as const prevents TypeScript from widening these values to any string.
-
-export const TRANSACTION_CATEGORIES = [
-  "food",
-  "transport",
-  "salary",
-  "education",
-  "entertainment",
-  "other",
 ] as const;
 
 export type TransactionType =
   (typeof TRANSACTION_TYPES)[number];
-
-export type TransactionCategory =
-  (typeof TRANSACTION_CATEGORIES)[number];
 
 export interface Transaction {
   userId: mongoose.Types.ObjectId;

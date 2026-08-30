@@ -4,6 +4,7 @@ import helmet from "helmet";//adds common HTTP security headers.
 import { AppError } from "./errors/app-error.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import authRouter from "./routes/auth.routes.js";
+import transactionRouter from "./routes/transaction.routes.js";
 
 const app = express();
 
