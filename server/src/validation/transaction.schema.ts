@@ -4,6 +4,34 @@ import { TRANSACTION_TYPES } from "../models/transaction.model.js";
 
 const currentYear = new Date().getUTCFullYear();
 
+export const createTransactionSchema = z
+  .object({
+    type: z.enum(TRANSACTION_TYPES),
+
+    amount: z
+      .string()
+      .trim()
+      .min(1, "Amount is required"),
+
+    category: z.enum(
+      TRANSACTION_CATEGORIES,
+    ),
+
+    description: z
+      .string()
+      .trim()
+      .max(120)
+      .optional(),
+
+    transactionDate: z.iso
+      .datetime({
+        offset: true,
+      })
+      .transform((value) => new Date(value))
+      .optional(),
+  })
+  .strict();
+
 export const listTransactionsQuerySchema = z
   .object({
     page: z.coerce//Query parameters arrive as strings, so z.coerce.number() converts "20" to 20.

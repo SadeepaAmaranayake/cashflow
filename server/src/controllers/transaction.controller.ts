@@ -7,8 +7,72 @@ import {
   TransactionModel,
   type Transaction,
 } from "../models/transaction.model.js";
-import { listTransactionsQuerySchema,  updateTransactionSchema } from "../validation/transaction.schema.js";
+import { createTransactionSchema,listTransactionsQuerySchema,updateTransactionSchema } from "../validation/transaction.schema.js";
+import { parseLkrToMinorUnits } from "../utils/money.js";
 
+
+export async function createTransaction(
+  request: Request,
+  response: Response,
+): Promise<void> {
+  const userId = getAuthenticatedUserId(request);
+
+  const input = createTransactionSchema.parse(
+    request.body,
+  );
+
+  const amountMinor = parseLkrToMinorUnits(
+    input.amount,
+  );
+
+  const transactionData = {
+    userId,
+    type: input.type,
+    amountMinor,
+    category: input.category,
+
+    ...(input.description !== undefined
+      ? {
+          description: input.description,
+        }
+      : {}),
+
+    ...(input.transactionDate !== undefined
+      ? {
+          transactionDate:
+            input.transactionDate,
+        }
+      : {}),
+  };
+
+  const transaction =
+    await TransactionModel.create(
+      transactionData,
+    );
+
+  response.status(201).json({
+    item: {
+      id: transaction.id,
+      type: transaction.type,
+      amountMinor: transaction.amountMinor,
+      category: transaction.category,
+      description: transaction.description,
+      transactionDate:
+        transaction.transactionDate,
+      reviewed: transaction.reviewed,
+      createdAt: transaction.createdAt,
+      updatedAt: transaction.updatedAt,
+    },
+  });
+}
+// getAuthenticatedUserId() gets ownership from the JWT.
+// createTransactionSchema.parse() rejects malformed and unknown fields.
+// parseLkrToMinorUnits("250.50") returns 25050.
+// The plain decimal amount is not saved.
+// If transactionDate is omitted, Mongoose uses Date.now.
+// If description is omitted, it is not stored as an unnecessary undefined.
+// reviewed uses the model default of false.
+// 201 Created is the correct status.
 
 export async function listTransactions(
   request: Request,
@@ -216,3 +280,4 @@ export async function deleteTransaction(
 
   response.status(204).send();
 }
+

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  createTransaction,
   deleteTransaction,
   listTransactions,
   updateTransaction,
@@ -10,6 +11,11 @@ import { asyncHandler } from "../utils/async-handler.js";
 const transactionRouter = Router();
 
 transactionRouter.use(requireAuthentication);
+
+transactionRouter.post(
+  "/",
+  asyncHandler(createTransaction),
+);
 
 transactionRouter.get(
   "/",
