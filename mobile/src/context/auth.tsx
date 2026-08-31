@@ -11,6 +11,7 @@ import {
   getAccessToken,
   removeAccessToken,
   saveAccessToken,
+  setUnauthorizedHandler,
 } from "@/services/api";
 
 import type {
@@ -46,31 +47,37 @@ export function AuthProvider({
   const [isLoading, setIsLoading] =
     useState(true);
 
-  useEffect(() => {
-    async function restoreSession() {
-      try {
-        const token = await getAccessToken();
+ useEffect(() => {
+  const removeUnauthorizedHandler =
+    setUnauthorizedHandler(() => {
+      setUser(null);
+    });
 
-        if (!token) {
-          return;
-        }
+  async function restoreSession() {
+    try {
+      const token = await getAccessToken();
 
-        const response =
-          await api.get<CurrentUserResponse>(
-            "/auth/me",
-          );
-
-        setUser(response.data.user);
-      } catch {
-        await removeAccessToken();
-        setUser(null);
-      } finally {
-        setIsLoading(false);
+      if (!token) {
+        return;
       }
-    }
 
-    void restoreSession();
-  }, []);
+      const response =
+        await api.get<CurrentUserResponse>(
+          "/auth/me",
+        );
+
+      setUser(response.data.user);
+    } catch {
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  void restoreSession();
+
+  return removeUnauthorizedHandler;
+}, []);
 
   async function login(
     input: LoginInput,
