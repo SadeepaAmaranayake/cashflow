@@ -1,4 +1,4 @@
-import axios from "axios";
+import { create } from "axios";
 import * as SecureStore from "expo-secure-store";
 
 const apiUrl =
@@ -12,7 +12,7 @@ if (!apiUrl) {
 
 const ACCESS_TOKEN_KEY = "accessToken";
 
-export const api = axios.create({
+export const api = create({
   baseURL: apiUrl.replace(/\/+$/, ""),
   timeout: 10_000,
 
