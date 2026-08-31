@@ -24,6 +24,7 @@ import type {
 
 interface AuthContextValue {
   user: User | null;
+  token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (input: LoginInput) => Promise<void>;
@@ -44,40 +45,51 @@ export function AuthProvider({
   const [user, setUser] =
     useState<User | null>(null);
 
+  const [token, setToken] =
+    useState<string | null>(null);
+
   const [isLoading, setIsLoading] =
     useState(true);
 
- useEffect(() => {
-  const removeUnauthorizedHandler =
-    setUnauthorizedHandler(() => {
-      setUser(null);
-    });
+  useEffect(() => {
+    const removeUnauthorizedHandler =
+      setUnauthorizedHandler(() => {
+        setToken(null);
+        setUser(null);
+      });
 
-  async function restoreSession() {
-    try {
-      const token = await getAccessToken();
+    async function restoreSession() {
+      try {
+        const storedToken =
+          await getAccessToken();
 
-      if (!token) {
-        return;
+        if (!storedToken) {
+          return;
+        }
+
+        setToken(storedToken);
+
+        const response =
+          await api.get<CurrentUserResponse>(
+            "/auth/me",
+          );
+
+        setUser(response.data.user);
+      } catch {
+        // A 401 is handled by the Axios interceptor:
+        // it deletes the stored token and clears state.
+        // A temporary network failure keeps the token in
+        // SecureStore, but no authenticated user is set.
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-
-      const response =
-        await api.get<CurrentUserResponse>(
-          "/auth/me",
-        );
-
-      setUser(response.data.user);
-    } catch {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
     }
-  }
 
-  void restoreSession();
+    void restoreSession();
 
-  return removeUnauthorizedHandler;
-}, []);
+    return removeUnauthorizedHandler;
+  }, []);
 
   async function login(
     input: LoginInput,
@@ -92,6 +104,7 @@ export function AuthProvider({
       response.data.token,
     );
 
+    setToken(response.data.token);
     setUser(response.data.user);
   }
 
@@ -108,11 +121,14 @@ export function AuthProvider({
       response.data.token,
     );
 
+    setToken(response.data.token);
     setUser(response.data.user);
   }
 
   async function logout(): Promise<void> {
     await removeAccessToken();
+
+    setToken(null);
     setUser(null);
   }
 
@@ -120,8 +136,10 @@ export function AuthProvider({
     <AuthContext.Provider
       value={{
         user,
+        token,
         isLoading,
-        isAuthenticated: user !== null,
+        isAuthenticated:
+          token !== null && user !== null,
         login,
         register,
         logout,
