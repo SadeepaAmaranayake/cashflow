@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import authRouter from "./routes/auth.routes.js";
 import dashboardRouter from "./routes/dashboard.routes.js";
 import transactionRouter from "./routes/transaction.routes.js";
+import reportRouter from "./routes/report.routes.js";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.get("/api/health", (_request, response) => {
 app.use("/api/auth", authRouter);
 app.use("/api/transactions", transactionRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/reports", reportRouter);
 // 404 handler comes after all real routes.
 app.use((_request, _response, next) => {
   next(new AppError(404, "Route not found"));
