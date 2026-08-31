@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { useState } from "react";
+import { useTheme } from "@/hooks/use-theme";
 
 import { useAuth } from "@/context/auth";
 import { getApiErrorMessage } from "@/services/api";
@@ -19,7 +20,7 @@ import {
 
 export default function LoginScreen() {
   const { login } = useAuth();
-
+  const theme = useTheme();
   const [apiError, setApiError] =
     useState<string | null>(null);
 
@@ -55,8 +56,24 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome back</Text>
+      <View
+        style={[
+            styles.container,
+            {
+            backgroundColor: theme.background,
+            },
+        ]}
+        >
+      <Text
+        style={[
+            styles.title,
+            {
+            color: theme.text,
+            },
+        ]}
+        >
+        Welcome back
+      </Text>
 
       <Controller
         control={control}
@@ -70,7 +87,9 @@ export default function LoginScreen() {
           fieldState,
         }) => (
           <View style={styles.field}>
-            <Text>Email</Text>
+            <Text style={{ color: theme.text }}>
+                Email
+            </Text>
 
             <TextInput
               autoCapitalize="none"
@@ -80,7 +99,14 @@ export default function LoginScreen() {
               onBlur={onBlur}
               onChangeText={onChange}
               placeholder="you@example.com"
-              style={styles.input}
+              placeholderTextColor={theme.textSecondary}
+                style={[
+                styles.input,
+                {
+                    backgroundColor: theme.backgroundElement,
+                    color: theme.text,
+                },
+                ]}
               value={value}
             />
 
@@ -106,7 +132,9 @@ export default function LoginScreen() {
           fieldState,
         }) => (
           <View style={styles.field}>
-            <Text>Password</Text>
+            <Text style={{ color: theme.text }}>
+                Password
+            </Text>
 
             <TextInput
               autoComplete="current-password"
@@ -114,7 +142,14 @@ export default function LoginScreen() {
               onChangeText={onChange}
               placeholder="Your password"
               secureTextEntry
-              style={styles.input}
+              placeholderTextColor={theme.textSecondary}
+                style={[
+                styles.input,
+                {
+                    backgroundColor: theme.backgroundElement,
+                    color: theme.text,
+                },
+                ]}
               value={value}
             />
 

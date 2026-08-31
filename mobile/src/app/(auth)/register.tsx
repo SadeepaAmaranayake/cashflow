@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { useState } from "react";
-
+import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/context/auth";
 import { getApiErrorMessage } from "@/services/api";
 import {
@@ -19,7 +19,7 @@ import {
 
 export default function RegisterScreen() {
   const { register } = useAuth();
-
+  const theme = useTheme();
   const [apiError, setApiError] =
     useState<string | null>(null);
 
@@ -82,8 +82,16 @@ export default function RegisterScreen() {
               onBlur={onBlur}
               onChangeText={onChange}
               placeholder="Your name"
-              style={styles.input}
+              
               value={value}
+              placeholderTextColor={theme.textSecondary}
+                style={[
+                styles.input,
+                {
+                    backgroundColor: theme.backgroundElement,
+                    color: theme.text,
+                },
+                ]}
             />
 
             {fieldState.isTouched &&
@@ -118,7 +126,14 @@ export default function RegisterScreen() {
               onBlur={onBlur}
               onChangeText={onChange}
               placeholder="you@example.com"
-              style={styles.input}
+              placeholderTextColor={theme.textSecondary}
+                style={[
+                styles.input,
+                {
+                    backgroundColor: theme.backgroundElement,
+                    color: theme.text,
+                },
+                ]}
               value={value}
             />
 
@@ -152,7 +167,14 @@ export default function RegisterScreen() {
               onChangeText={onChange}
               placeholder="At least 8 characters"
               secureTextEntry
-              style={styles.input}
+              placeholderTextColor={theme.textSecondary}
+                style={[
+                styles.input,
+                {
+                    backgroundColor: theme.backgroundElement,
+                    color: theme.text,
+                },
+                ]}
               value={value}
             />
 
