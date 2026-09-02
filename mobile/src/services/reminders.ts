@@ -8,6 +8,9 @@ const DAILY_REMINDER_CHANNEL_ID =
 const DAILY_REMINDER_STORAGE_KEY =
   "dailyReminder";
 
+const TEST_NOTIFICATION_STORAGE_KEY =
+  "testNotificationId";
+
 export const DEFAULT_REMINDER_HOUR = 21;
 export const DEFAULT_REMINDER_MINUTE = 0;
 
@@ -231,6 +234,81 @@ export async function scheduleDailyReminder(
     );
   } catch (error) {
     // Avoid leaving an untracked notification if storage fails.
+    await Notifications
+      .cancelScheduledNotificationAsync(scheduleId)
+      .catch(() => undefined);
+
+    throw error;
+  }
+
+  return scheduleId;
+}
+
+export async function cancelTestNotification(): Promise<void> {
+  const scheduleId =
+    await SecureStore.getItemAsync(
+      TEST_NOTIFICATION_STORAGE_KEY,
+    );
+
+  if (!scheduleId) {
+    return;
+  }
+
+  try {
+    await Notifications.cancelScheduledNotificationAsync(
+      scheduleId,
+    );
+  } finally {
+    await SecureStore.deleteItemAsync(
+      TEST_NOTIFICATION_STORAGE_KEY,
+    );
+  }
+}
+
+export async function scheduleTestNotification(
+  seconds = 60,
+): Promise<string> {
+  if (
+    !Number.isInteger(seconds) ||
+    seconds < 1
+  ) {
+    throw new Error(
+      "Test notification delay must be a positive integer",
+    );
+  }
+
+  await requestPermission();
+  await cancelTestNotification();
+
+  const scheduleId =
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "CampusCash daily review",
+        body: "Have you recorded today's spending?",
+        sound: "default",
+        data: {
+          url: "/add",
+        },
+      },
+      trigger: {
+        type:
+          Notifications.SchedulableTriggerInputTypes
+            .TIME_INTERVAL,
+        seconds,
+        repeats: false,
+        channelId:
+          Platform.OS === "android"
+            ? DAILY_REMINDER_CHANNEL_ID
+            : undefined,
+      },
+    });
+
+  try {
+    await SecureStore.setItemAsync(
+      TEST_NOTIFICATION_STORAGE_KEY,
+      scheduleId,
+    );
+  } catch (error) {
     await Notifications
       .cancelScheduledNotificationAsync(scheduleId)
       .catch(() => undefined);
