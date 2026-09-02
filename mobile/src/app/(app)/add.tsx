@@ -1,7 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import { Controller, useForm } from "react-hook-form";
 import {
+  Controller,
+  useForm,
+  useWatch,
+} from "react-hook-form";import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -47,7 +50,6 @@ export default function AddScreen() {
     control,
     handleSubmit,
     reset,
-    watch,
     formState: {
       isSubmitting,
     },
@@ -57,8 +59,11 @@ export default function AddScreen() {
     defaultValues: getDefaultValues(),
   });
 
-  const transactionDate = watch("transactionDate");
-
+  const transactionDate = useWatch({
+    control,
+    name: "transactionDate",
+    defaultValue: new Date().toISOString(),
+  });
   async function onSubmit(
     values: TransactionFormValues,
   ): Promise<void> {

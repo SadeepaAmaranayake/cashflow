@@ -1,6 +1,7 @@
 import { api } from "@/services/api";
 import type {
   Transaction,
+  TransactionListResponse,
   TransactionResponse,
   TransactionType,
 } from "@/types/api";
@@ -8,6 +9,28 @@ import type {
   TransactionCategory,
 } from "@/constants/categories";
 import { parseMoneyInput } from "@/utils/money";
+
+export interface ListTransactionsOptions {
+  page?: number;
+  limit?: number;
+  type?: TransactionType;
+  month?: number;
+  year?: number;
+}
+
+export async function listTransactions(
+  options: ListTransactionsOptions,
+): Promise<TransactionListResponse> {
+  const response =
+    await api.get<TransactionListResponse>(
+      "/transactions",
+      {
+        params: options,
+      },
+    );
+
+  return response.data;
+}
 
 export interface CreateTransactionInput {
   type: TransactionType;
