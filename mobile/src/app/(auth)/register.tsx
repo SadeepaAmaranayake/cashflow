@@ -57,8 +57,18 @@ export default function RegisterScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.background },
+      ]}
+    >
+      <Text
+        style={[
+          styles.title,
+          { color: theme.text },
+        ]}
+      >
         Create an account
       </Text>
 
@@ -74,7 +84,9 @@ export default function RegisterScreen() {
           fieldState,
         }) => (
           <View style={styles.field}>
-            <Text>Name</Text>
+            <Text style={{ color: theme.text }}>
+              Name
+            </Text>
 
             <TextInput
               autoCapitalize="words"
@@ -116,7 +128,9 @@ export default function RegisterScreen() {
           fieldState,
         }) => (
           <View style={styles.field}>
-            <Text>Email</Text>
+            <Text style={{ color: theme.text }}>
+              Email
+            </Text>
 
             <TextInput
               autoCapitalize="none"
@@ -159,7 +173,9 @@ export default function RegisterScreen() {
           fieldState,
         }) => (
           <View style={styles.field}>
-            <Text>Password</Text>
+            <Text style={{ color: theme.text }}>
+              Password
+            </Text>
 
             <TextInput
               autoComplete="new-password"

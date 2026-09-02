@@ -8,14 +8,24 @@ const DAILY_REMINDER_CHANNEL_ID =
 const DAILY_REMINDER_STORAGE_KEY =
   "dailyReminderNotificationId";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+let isNotificationHandlerConfigured = false;
+
+export function configureNotificationHandler(): void {
+  if (isNotificationHandlerConfigured) {
+    return;
+  }
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+
+  isNotificationHandlerConfigured = true;
+}
 
 function validateReminderTime(
   hour: number,

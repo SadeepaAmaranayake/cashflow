@@ -1,4 +1,5 @@
 import jwt, { type SignOptions } from "jsonwebtoken";//satisfies SignOptions checks that the object is valid without changing "HS256" and "1h" into overly broad or optional types.
+import { env } from "../config/env.js";
 
 const JWT_SIGN_OPTIONS = {
   algorithm: "HS256",
@@ -6,17 +7,7 @@ const JWT_SIGN_OPTIONS = {
 } satisfies SignOptions;
 
 function getJwtSecret(): string {
-  const jwtSecret = process.env.JWT_SECRET;
-
-  if (!jwtSecret) {
-    throw new Error("JWT_SECRET is missing from the environment");
-  }
-
-  if (Buffer.byteLength(jwtSecret, "utf8") < 32) {
-    throw new Error("JWT_SECRET must contain at least 32 bytes");
-  }
-
-  return jwtSecret;
+  return env.JWT_SECRET;
 }
 
 export function signAccessToken(userId: string): string {

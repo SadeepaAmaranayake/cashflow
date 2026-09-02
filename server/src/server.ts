@@ -1,10 +1,10 @@
-import "dotenv/config";
 import mongoose from "mongoose";
 import app from "./app.js";
 import { connectDatabase } from "./config/database.js";
+import { env } from "./config/env.js";
 
 const host = "0.0.0.0";
-const port = Number(process.env.PORT ?? 3000);
+const port = env.PORT;
 
 async function startServer(): Promise<void> {
   await connectDatabase();
@@ -24,16 +24,25 @@ async function startServer(): Promise<void> {
     console.log(`${signal} received. Shutting down...`);
 
     try {
-      await new Promise<void>((resolve, reject) => {
-        server.close((error?: Error) => {
-          if (error) {
-            reject(error);
-            return;
-          }
+      if (server.listening) {
+        await new Promise<void>((resolve, reject) => {
+          server.close((error?: Error) => {
+            const errorCode = (
+              error as NodeJS.ErrnoException | undefined
+            )?.code;
 
-          resolve();
+            if (
+              error &&
+              errorCode !== "ERR_SERVER_NOT_RUNNING"
+            ) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          });
         });
-      });
+      }
 
       await mongoose.disconnect();
       console.log("Server and MongoDB connection closed");

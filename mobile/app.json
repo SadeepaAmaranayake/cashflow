@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "mobile",
-    "slug": "mobile",
+    "slug": "sadeepa",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,7 +10,7 @@
     "ios": {
       "icon": "./assets/expo.icon"
     },
-    "android":{
+    "android": {
       "package": "com.sadeepa.cashflow",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -36,13 +36,18 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ],
-      "expo-secure-store",
-      "expo-image"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9fd88ade-f4e3-4d8e-84e4-6a57aaf6ea3e"
+      }
+    },
+    "owner": "sadeepa123s-team"
   }
 }

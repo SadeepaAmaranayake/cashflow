@@ -1,5 +1,4 @@
 import { Tabs } from "expo-router";
-import "@/services/reminders";
 
 export default function AppLayout() {
   return (
