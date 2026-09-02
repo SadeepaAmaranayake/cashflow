@@ -6,7 +6,16 @@ const DAILY_REMINDER_CHANNEL_ID =
   "daily-reminder";
 
 const DAILY_REMINDER_STORAGE_KEY =
-  "dailyReminderNotificationId";
+  "dailyReminder";
+
+export const DEFAULT_REMINDER_HOUR = 21;
+export const DEFAULT_REMINDER_MINUTE = 0;
+
+interface StoredDailyReminder {
+  scheduleId: string;
+  hour: number;
+  minute: number;
+}
 
 let isNotificationHandlerConfigured = false;
 
@@ -60,11 +69,12 @@ async function createAndroidChannel(): Promise<void> {
   await Notifications.setNotificationChannelAsync(
     DAILY_REMINDER_CHANNEL_ID,
     {
-      name: "Daily reminder",
+      name: "Daily transaction reminder",
       description:
-        "Daily Cashflow transaction reminder",
+        "Reminds you to record daily income and expenses",
       importance:
         Notifications.AndroidImportance.DEFAULT,
+      enableVibrate: true,
       sound: "default",
     },
   );
@@ -73,35 +83,99 @@ async function createAndroidChannel(): Promise<void> {
 async function requestPermission(): Promise<void> {
   await createAndroidChannel();
 
-  const currentPermissions =
+  const existingPermission =
     await Notifications.getPermissionsAsync();
 
-  if (currentPermissions.granted) {
+  if (existingPermission.granted) {
     return;
   }
 
-  const requestedPermissions =
+  const requestedPermission =
     await Notifications.requestPermissionsAsync();
 
-  if (!requestedPermissions.granted) {
+  if (!requestedPermission.granted) {
     throw new Error(
-      "Notification permission is required to set a reminder",
+      "Notification permission was denied",
     );
   }
 }
 
-export async function cancelDailyReminder(): Promise<void> {
-  const notificationId =
+async function getStoredDailyReminder(): Promise<
+  StoredDailyReminder | null
+> {
+  const storedValue =
     await SecureStore.getItemAsync(
       DAILY_REMINDER_STORAGE_KEY,
     );
 
-  if (!notificationId) {
+  if (!storedValue) {
+    return null;
+  }
+
+  try {
+    const parsedValue: unknown =
+      JSON.parse(storedValue);
+
+    if (
+      typeof parsedValue === "object" &&
+      parsedValue !== null &&
+      "scheduleId" in parsedValue &&
+      "hour" in parsedValue &&
+      "minute" in parsedValue &&
+      typeof parsedValue.scheduleId === "string" &&
+      typeof parsedValue.hour === "number" &&
+      typeof parsedValue.minute === "number"
+    ) {
+      return {
+        scheduleId: parsedValue.scheduleId,
+        hour: parsedValue.hour,
+        minute: parsedValue.minute,
+      };
+    }
+  } catch {
+    // Invalid locally stored JSON is handled below.
+  }
+
+  await SecureStore.deleteItemAsync(
+    DAILY_REMINDER_STORAGE_KEY,
+  );
+
+  return null;
+}
+
+export async function getDailyReminderSettings(): Promise<{
+  enabled: boolean;
+  hour: number;
+  minute: number;
+}> {
+  const storedReminder =
+    await getStoredDailyReminder();
+
+  if (!storedReminder) {
+    return {
+      enabled: false,
+      hour: DEFAULT_REMINDER_HOUR,
+      minute: DEFAULT_REMINDER_MINUTE,
+    };
+  }
+
+  return {
+    enabled: true,
+    hour: storedReminder.hour,
+    minute: storedReminder.minute,
+  };
+}
+
+export async function cancelDailyReminder(): Promise<void> {
+  const storedReminder =
+    await getStoredDailyReminder();
+
+  if (!storedReminder) {
     return;
   }
 
   await Notifications.cancelScheduledNotificationAsync(
-    notificationId,
+    storedReminder.scheduleId,
   );
 
   await SecureStore.deleteItemAsync(
@@ -112,27 +186,29 @@ export async function cancelDailyReminder(): Promise<void> {
 export async function scheduleDailyReminder(
   hour: number,
   minute: number,
-): Promise<void> {
+): Promise<string> {
   validateReminderTime(hour, minute);
 
   await requestPermission();
 
-  // Prevents two reminders when the user changes time.
+  // Remove the old schedule before creating another one.
   await cancelDailyReminder();
 
-  const notificationId =
+  const scheduleId =
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Cashflow reminder",
-        body: "Remember to record today’s income and expenses.",
-        data: {
-          type: "daily-reminder",
-        },
+        title: "CampusCash daily review",
+        body: "Have you recorded today's spending?",
         sound: "default",
+        data: {
+          url: "/add",
+        },
       },
+
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes
-          .DAILY,
+        type:
+          Notifications.SchedulableTriggerInputTypes
+            .DAILY,
         hour,
         minute,
         channelId:
@@ -142,8 +218,25 @@ export async function scheduleDailyReminder(
       },
     });
 
-  await SecureStore.setItemAsync(
-    DAILY_REMINDER_STORAGE_KEY,
-    notificationId,
-  );
+  const storedReminder: StoredDailyReminder = {
+    scheduleId,
+    hour,
+    minute,
+  };
+
+  try {
+    await SecureStore.setItemAsync(
+      DAILY_REMINDER_STORAGE_KEY,
+      JSON.stringify(storedReminder),
+    );
+  } catch (error) {
+    // Avoid leaving an untracked notification if storage fails.
+    await Notifications
+      .cancelScheduledNotificationAsync(scheduleId)
+      .catch(() => undefined);
+
+    throw error;
+  }
+
+  return scheduleId;
 }
