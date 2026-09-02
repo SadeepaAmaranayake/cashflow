@@ -10,7 +10,8 @@
     "ios": {
       "icon": "./assets/expo.icon"
     },
-    "android": {
+    "android":{
+      "package": "com.sadeepa.cashflow",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -25,6 +26,9 @@
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
+      "expo-image",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {

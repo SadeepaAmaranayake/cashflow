@@ -11,7 +11,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-
+import "@/services/reminders";
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import {
   AuthProvider,
