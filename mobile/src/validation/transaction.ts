@@ -25,14 +25,16 @@ export const transactionFormSchema = z.object({
   category: z.enum(TRANSACTION_CATEGORIES),
 
   description: z
-    .string()
-    .trim()
-    .max(
-      120,
-      "Description must be 120 characters or fewer",
-    )
-    .optional()
-    .transform((value) => value || undefined),
+  .string()
+  .trim()
+  .max(
+    120,
+    "Description must be 120 characters or fewer",
+  ),
+
+    transactionDate: z.string().datetime({
+      offset: true,
+    }),
 });
 
 export type TransactionFormValues = z.infer<
