@@ -1,5 +1,10 @@
 import { create, isAxiosError } from "axios";
 import * as SecureStore from "expo-secure-store";
+import type {
+  TransactionCategory,
+} from "@/constants/categories";
+
+export type ISODateString = string;
 
 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 

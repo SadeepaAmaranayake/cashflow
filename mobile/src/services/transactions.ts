@@ -1,130 +1,88 @@
-import { create, isAxiosError } from "axios";
-import * as SecureStore from "expo-secure-store";
+import { api } from "@/services/api";
+import type {
+  Transaction,
+  TransactionResponse,
+  TransactionType,
+} from "@/types/api";
+import type {
+  TransactionCategory,
+} from "@/constants/categories";
+import { parseMoneyInput } from "@/utils/money";
 
-const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-
-if (!apiUrl) {
-  throw new Error(
-    "EXPO_PUBLIC_API_URL is not configured",
-  );
+export interface CreateTransactionInput {
+  type: TransactionType;
+  amount: string;
+  category: TransactionCategory;
+  description?: string;
+  transactionDate?: string;
 }
 
-const ACCESS_TOKEN_KEY = "accessToken";
+export interface UpdateTransactionInput {
+  type?: TransactionType;
+  amount?: string;
+  category?: TransactionCategory;
+  description?: string;
+  transactionDate?: string;
+  reviewed?: boolean;
+}
 
-type UnauthorizedHandler = () => void;
+export async function createTransaction(
+  input: CreateTransactionInput,
+): Promise<Transaction> {
+  const parsedAmount = parseMoneyInput(input.amount);
 
-let unauthorizedHandler:
-  | UnauthorizedHandler
-  | undefined;
+  if (!parsedAmount.ok) {
+    throw new Error(parsedAmount.message);
+  }
 
-export function setUnauthorizedHandler(
-  handler: UnauthorizedHandler,
-): () => void {
-  unauthorizedHandler = handler;
+  const response = await api.post<TransactionResponse>(
+    "/transactions",
+    {
+      type: input.type,
+      amount: input.amount.trim(),
+      category: input.category,
+      description: input.description?.trim(),
+      transactionDate: input.transactionDate,
+    },
+  );
 
-  return () => {
-    if (unauthorizedHandler === handler) {
-      unauthorizedHandler = undefined;
-    }
+  return response.data.item;
+}
+
+export async function updateTransaction(
+  transactionId: string,
+  input: UpdateTransactionInput,
+): Promise<Transaction> {
+  const requestBody: {
+    type?: TransactionType;
+    amountMinor?: number;
+    category?: TransactionCategory;
+    description?: string;
+    transactionDate?: string;
+    reviewed?: boolean;
+  } = {
+    type: input.type,
+    category: input.category,
+    description: input.description?.trim(),
+    transactionDate: input.transactionDate,
+    reviewed: input.reviewed,
   };
-}
 
-export const api = create({
-  baseURL: apiUrl.replace(/\/+$/, ""),
-  timeout: 10_000,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+  if (input.amount !== undefined) {
+    const parsedAmount = parseMoneyInput(input.amount);
 
-api.interceptors.request.use(
-  async (config) => {
-    const token = await getAccessToken();
-
-    if (token) {
-      config.headers.Authorization =
-        `Bearer ${token}`;
+    if (!parsedAmount.ok) {
+      throw new Error(parsedAmount.message);
     }
 
-    return config;
-  },
-);
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error: unknown) => {
-    if (isAxiosError(error)) {
-      if (error.response?.status === 401) {
-        await removeAccessToken();
-        unauthorizedHandler?.();
-      }
-
-      if (!error.response) {
-        const message =
-          error.code === "ECONNABORTED"
-            ? "The request timed out. Try again."
-            : "Unable to reach the server. Check your connection and try again.";
-
-        return Promise.reject(new Error(message));
-      }
-    }
-
-    return Promise.reject(error);
-  },
-);
-
-export async function saveAccessToken(
-  token: string,
-): Promise<void> {
-  await SecureStore.setItemAsync(
-    ACCESS_TOKEN_KEY,
-    token,
-  );
-}
-
-export async function removeAccessToken(): Promise<void> {
-  await SecureStore.deleteItemAsync(
-    ACCESS_TOKEN_KEY,
-  );
-}
-
-export async function getAccessToken(): Promise<
-  string | null
-> {
-  return SecureStore.getItemAsync(
-    ACCESS_TOKEN_KEY,
-  );
-}
-
-function hasMessage(
-  value: unknown,
-): value is { message: string } {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "message" in value &&
-    typeof value.message === "string"
-  );
-}
-
-export function getApiErrorMessage(
-  error: unknown,
-): string {
-  if (isAxiosError(error)) {
-    if (hasMessage(error.response?.data)) {
-      return error.response.data.message;
-    }
-
-    if (!error.response) {
-      return "Unable to reach the server. Check your connection and try again.";
-    }
-
-    return `Request failed with status ${error.response.status}`;
+    requestBody.amountMinor =
+      parsedAmount.amountMinor;
   }
 
-  if (error instanceof Error) {
-    return error.message;
-  }
+  const response = await api.patch<TransactionResponse>(
+    `/transactions/${transactionId}`,
+    requestBody,
+  );
 
-  return "Something went wrong. Please try again.";
+  return response.data.item;
 }
