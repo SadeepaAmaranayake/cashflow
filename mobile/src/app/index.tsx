@@ -1,22 +1,38 @@
-import { Text } from "react-native";
+import { Redirect } from "expo-router";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  View,
+} from "react-native";
+
 import { useAuth } from "@/context/auth";
 
 export default function IndexScreen() {
   const {
-    user,
-    isLoading,
     isAuthenticated,
+    isLoading,
   } = useAuth();
 
   if (isLoading) {
-    return <Text>Checking session...</Text>;
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
-  return (
-    <Text>
-      {isAuthenticated
-        ? `Logged in as ${user?.email}`
-        : "Not logged in"}
-    </Text>
-  );
+  if (isAuthenticated) {
+    return <Redirect href="/(app)" />;
+  }
+
+  return <Redirect href="/(auth)/login" />;
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ffffff",
+  },
+});

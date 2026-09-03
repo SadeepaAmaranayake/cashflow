@@ -1,3 +1,4 @@
+import { isRunningInExpoGo } from "expo";
 import {
   Alert,
   Button,
@@ -7,15 +8,24 @@ import {
 } from "react-native";
 
 import { useTheme } from "@/hooks/use-theme";
-import {
-  scheduleTestNotification,
-} from "@/services/reminders";
 
 export default function SettingsScreen() {
   const theme = useTheme();
 
   async function handleTestNotification(): Promise<void> {
+    if (isRunningInExpoGo()) {
+      Alert.alert(
+        "Development build required",
+        "Notifications cannot be tested in Expo Go. Install the CampusCash development APK.",
+      );
+
+      return;
+    }
+
     try {
+      const { scheduleTestNotification } =
+        await import("@/services/reminders");
+
       await scheduleTestNotification(60);
 
       Alert.alert(
@@ -28,10 +38,7 @@ export default function SettingsScreen() {
           ? error.message
           : "Unable to schedule the test notification";
 
-      Alert.alert(
-        "Notification error",
-        message,
-      );
+      Alert.alert("Notification error", message);
     }
   }
 

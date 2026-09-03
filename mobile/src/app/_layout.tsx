@@ -4,9 +4,7 @@ import {
   Stack,
   ThemeProvider,
 } from "expo-router";
-import { isRunningInExpoGo } from "expo";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -50,23 +48,6 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-
-  useEffect(() => {
-    if (isRunningInExpoGo()) {
-      return;
-    }
-
-    void import("@/services/reminders")
-      .then(({ configureNotificationHandler }) => {
-        configureNotificationHandler();
-      })
-      .catch((error: unknown) => {
-        console.error(
-          "Unable to initialize notifications:",
-          error,
-        );
-      });
-  }, []);
 
   return (
     <AuthProvider>
