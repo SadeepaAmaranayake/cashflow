@@ -201,11 +201,6 @@ export default function ReportsScreen() {
     selection.year > 2000 ||
     selection.month > 1;
 
-  const isEmpty =
-    report !== null &&
-    report.totals.incomeMinor === 0 &&
-    report.totals.expensesMinor === 0;
-
   function showPreviousMonth(): void {
     if (!canMoveToPreviousMonth) {
       return;
@@ -359,72 +354,43 @@ export default function ReportsScreen() {
               }
             />
           </View>
-
-          {isEmpty && (
-            <View
-              style={[
-                styles.stateContainer,
-                {
-                  backgroundColor:
-                    theme.backgroundElement,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.emptyTitle,
-                  {
-                    color: theme.text,
-                  },
-                ]}
-              >
-                No transactions
-              </Text>
-
-              <Text
-                style={{
-                  color: theme.textSecondary,
-                }}
-              >
-                There are no transactions for{" "}
-                {formatMonthName(selection)}.
-              </Text>
-            </View>
-          )}
-
-          {!isEmpty &&
-            report.expensesByCategory.length >
-              0 && (
+          {report.expensesByCategory.length > 0 ? (
               <ExpenseCategoryChart
-                items={
-                  report.expensesByCategory
-                }
+                  items={report.expensesByCategory}
               />
-            )}
+                ) : (
+                  <View
+                    style={[
+                      styles.stateContainer,
+                      {
+                        backgroundColor:
+                          theme.backgroundElement,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.emptyTitle,
+                        {
+                          color: theme.text,
+                        },
+                      ]}
+                    >
+                      No spending recorded
+                    </Text>
 
-          {!isEmpty &&
-            report.expensesByCategory.length ===
-              0 && (
-              <View
-                style={[
-                  styles.stateContainer,
-                  {
-                    backgroundColor:
-                      theme.backgroundElement,
-                  },
-                ]}
-              >
-                <Text
-                  style={{
-                    color:
-                      theme.textSecondary,
-                  }}
-                >
-                  This month has income but no
-                  expense category data.
-                </Text>
-              </View>
-            )}
+                    <Text
+                      style={{
+                        color: theme.textSecondary,
+                        textAlign: "center",
+                      }}
+                    >
+                      There are no expense transactions for{" "}
+                      {formatMonthName(selection)}.
+                    </Text>
+                  </View>
+                )}
+
         </>
       )}
     </ScrollView>
