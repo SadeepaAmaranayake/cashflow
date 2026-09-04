@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TRANSACTION_CATEGORIES } from "../constants/transaction-categories.js";
+import { MAX_AMOUNT_MINOR } from "../constants/money.js";
 import { TRANSACTION_TYPES } from "../models/transaction.model.js";
 
 const currentYear = new Date().getUTCFullYear();
@@ -94,8 +95,9 @@ export const updateTransactionSchema = z
       .refine(
         (value) =>
           Number.isSafeInteger(value) &&
-          value > 0,
-        "amountMinor must be a positive safe integer",
+          value > 0 &&
+          value <= MAX_AMOUNT_MINOR,
+        "amountMinor must be a positive safe integer within the allowed maximum",
       )
       .optional(),
 

@@ -6,6 +6,9 @@ import mongoose from "mongoose";
 import { AppError } from "../errors/app-error.js";
 import { TransactionModel } from "../models/transaction.model.js";
 import { UserModel } from "../models/user.model.js";
+import {
+  requireValidTimeZone,
+} from "../utils/timezone.js";
 import { monthlyReportQuerySchema } from "../validation/report.schemas.js";
 
 interface MonthBoundaries {
@@ -63,8 +66,20 @@ export async function getMonthlyReport(
       ? query.year + 1
       : query.year;
 
+  const user = await UserModel.findById(userId)
+    .select("timezone")
+    .lean();
+
+  if (!user) {
+    throw new AppError(401, "Unauthorized");
+  }
+
+  const timezone = requireValidTimeZone(
+    user.timezone,
+  );
+
   const timezoneExpression = {
-    $ifNull: ["$timezone", "Asia/Colombo"],
+    $literal: timezone,
   };
 
   const [boundaries] =

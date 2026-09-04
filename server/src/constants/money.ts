@@ -1,0 +1,1 @@
+export const MAX_AMOUNT_MINOR = 10_000_000_000;

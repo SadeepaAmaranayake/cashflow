@@ -318,3 +318,54 @@ export async function scheduleTestNotification(
 
   return scheduleId;
 }
+
+export type NotificationRoute = "/add";
+
+function getNotificationRoute(
+  response: Notifications.NotificationResponse,
+): NotificationRoute | null {
+  if (
+    response.actionIdentifier !==
+    Notifications.DEFAULT_ACTION_IDENTIFIER
+  ) {
+    return null;
+  }
+
+  const url =
+    response.notification.request.content.data?.url;
+
+  return url === "/add" ? url : null;
+}
+
+export function observeNotificationTaps(
+  openRoute: (route: NotificationRoute) => void,
+): () => void {
+  function handleResponse(
+    response: Notifications.NotificationResponse,
+  ): void {
+    const route = getNotificationRoute(response);
+
+    if (!route) {
+      return;
+    }
+
+    openRoute(route);
+    Notifications.clearLastNotificationResponse();
+  }
+
+  const lastResponse =
+    Notifications.getLastNotificationResponse();
+
+  if (lastResponse) {
+    handleResponse(lastResponse);
+  }
+
+  const subscription =
+    Notifications.addNotificationResponseReceivedListener(
+      handleResponse,
+    );
+
+  return () => {
+    subscription.remove();
+  };
+}

@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  BCRYPT_MAX_PASSWORD_BYTES,
+  isWithinBcryptPasswordLimit,
+} from "../constants/password.js";
 
 export const registerSchema = z
   .object({
@@ -16,7 +20,11 @@ export const registerSchema = z
 
     password: z
       .string()
-      .min(8, "Password must contain at least 8 characters"),
+      .min(8, "Password must contain at least 8 characters")
+      .refine(
+        isWithinBcryptPasswordLimit,
+        `Password must not exceed ${BCRYPT_MAX_PASSWORD_BYTES} UTF-8 bytes`,
+      ),
   })
   .strict();//.strict() rejects request fields not defined in the schema.
 

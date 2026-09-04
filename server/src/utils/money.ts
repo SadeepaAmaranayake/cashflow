@@ -1,10 +1,11 @@
 import { AppError } from "../errors/app-error.js";
+import {
+  MAX_AMOUNT_MINOR,
+} from "../constants/money.js";
 
 const MINOR_UNITS_PER_LKR = 100n;
-const MAX_AMOUNT_LKR = 100_000_000n;
-
-const MAX_AMOUNT_MINOR =
-  MAX_AMOUNT_LKR * MINOR_UNITS_PER_LKR;
+const MAX_AMOUNT_MINOR_BIGINT =
+  BigInt(MAX_AMOUNT_MINOR);
 
 const DECIMAL_AMOUNT_PATTERN =
   /^\d+(?:\.\d{1,2})?$/;
@@ -44,7 +45,7 @@ export function parseLkrToMinorUnits(
     );
   }
 
-  if (amountMinorBigInt > MAX_AMOUNT_MINOR) {
+  if (amountMinorBigInt > MAX_AMOUNT_MINOR_BIGINT) {
     throw new AppError(
       400,
       "Amount exceeds the maximum allowed value",

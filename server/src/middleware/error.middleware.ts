@@ -6,6 +6,11 @@ interface DuplicateKeyError {
   code: number;
 }
 
+interface JsonParseError {
+  status: number;
+  type: string;
+}
+
 function isDuplicateKeyError(
   error: unknown,
 ): error is DuplicateKeyError {
@@ -17,6 +22,18 @@ function isDuplicateKeyError(
   );
 }
 
+function isJsonParseError(
+  error: unknown,
+): error is SyntaxError & JsonParseError {
+  return (
+    error instanceof SyntaxError &&
+    "status" in error &&
+    error.status === 400 &&
+    "type" in error &&
+    error.type === "entity.parse.failed"
+  );
+}
+
 export const errorHandler: ErrorRequestHandler = (
   error: unknown,
   _request,
@@ -25,6 +42,15 @@ export const errorHandler: ErrorRequestHandler = (
 ): void => {
   if (response.headersSent) {
     next(error);
+    return;
+  }
+
+  if (isJsonParseError(error)) {
+    response.status(400).json({
+      status: "error",
+      message: "Malformed JSON body",
+    });
+
     return;
   }
 

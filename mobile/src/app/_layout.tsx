@@ -16,6 +16,9 @@ import {
   AuthProvider,
   useAuth,
 } from "@/context/auth";
+import {
+  useNotificationRuntime,
+} from "@/hooks/use-notification-runtime";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,6 +27,8 @@ function RootNavigator() {
     isAuthenticated,
     isLoading,
   } = useAuth();
+
+  useNotificationRuntime(isAuthenticated);
 
   if (isLoading) {
     return (

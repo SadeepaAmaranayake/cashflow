@@ -2,6 +2,10 @@ import mongoose, {
   type InferSchemaType,//InferSchemaType and Model remain named imports because they are type-only imports and disappear when TypeScript runs.
   type Model,
 } from "mongoose";
+import {
+  DEFAULT_TIMEZONE,
+  isValidTimeZone,
+} from "../utils/timezone.js";
 
 const userSchema = new mongoose.Schema(  {
     name: {
@@ -33,7 +37,12 @@ const userSchema = new mongoose.Schema(  {
 
     timezone: {
       type: String,
-      default: "Asia/Colombo",
+      trim: true,
+      default: DEFAULT_TIMEZONE,
+      validate: {
+        validator: isValidTimeZone,
+        message: "Timezone must be a valid IANA timezone",
+      },
     },
 
     reminderHour: {

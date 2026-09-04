@@ -3,6 +3,7 @@ import {
   TRANSACTION_CATEGORIES,
   type TransactionCategory,
 } from "../constants/transaction-categories.js";
+import { MAX_AMOUNT_MINOR } from "../constants/money.js";
 
 export const TRANSACTION_TYPES = [
   "income",
@@ -42,6 +43,10 @@ const transactionSchema = new mongoose.Schema<Transaction>(
       type: Number,
       required: true,
       min: [1, "Amount must be greater than zero"],
+      max: [
+        MAX_AMOUNT_MINOR,
+        "Amount exceeds the maximum allowed value",
+      ],
       validate: {
         validator(value: number): boolean {
           return Number.isSafeInteger(value);

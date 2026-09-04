@@ -6,6 +6,9 @@ import mongoose from "mongoose";
 import { AppError } from "../errors/app-error.js";
 import { TransactionModel } from "../models/transaction.model.js";
 import { UserModel } from "../models/user.model.js";
+import {
+  requireValidTimeZone,
+} from "../utils/timezone.js";
 
 interface DashboardTotals {
   balanceMinor: number;
@@ -58,8 +61,9 @@ export async function getDashboardSummary(
     throw new AppError(401, "Unauthorized");
   }
 
-  const timezone =
-    user.timezone || "Asia/Colombo";
+  const timezone = requireValidTimeZone(
+    user.timezone,
+  );
 
   const [dashboard] =
     await TransactionModel.aggregate<DashboardAggregationResult>(

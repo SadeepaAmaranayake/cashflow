@@ -1,14 +1,12 @@
 import bcrypt from "bcrypt";
+import {
+  isWithinBcryptPasswordLimit,
+} from "../constants/password.js";
 
 const BCRYPT_COST = 12;
-const BCRYPT_MAX_PASSWORD_BYTES = 72;
-
-function isWithinBcryptLimit(password: string): boolean {
-  return Buffer.byteLength(password, "utf8") <= BCRYPT_MAX_PASSWORD_BYTES;
-}
 
 export async function hashPassword(password: string): Promise<string> {
-  if (!isWithinBcryptLimit(password)) {
+  if (!isWithinBcryptPasswordLimit(password)) {
     throw new Error("Password exceeds bcrypt's 72-byte limit");
   }
 
@@ -19,7 +17,7 @@ export async function comparePassword(
   password: string,
   passwordHash: string,
 ): Promise<boolean> {
-  if (!isWithinBcryptLimit(password)) {
+  if (!isWithinBcryptPasswordLimit(password)) {
     return false;
   }
 

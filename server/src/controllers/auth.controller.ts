@@ -8,6 +8,9 @@ import {
 } from "../utils/password.js";
 import { signAccessToken } from "../utils/token.js";
 import {
+  requireValidTimeZone,
+} from "../utils/timezone.js";
+import {
   loginSchema,
   registerSchema,
 } from "../validation/auth.schemas.js";
@@ -117,7 +120,9 @@ export async function getCurrentUser(
       name: user.name,
       email: user.email,
       currency: user.currency,
-      timezone: user.timezone,
+      timezone: requireValidTimeZone(
+        user.timezone,
+      ),
       reminderHour: user.reminderHour,
       reminderMinute: user.reminderMinute,
       createdAt: user.createdAt,
