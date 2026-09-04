@@ -43,6 +43,33 @@ export function formatMoney(
   )}.${fractionalPart}`;
 }
 
+export function formatMoneyInput(
+  amountMinor: number,
+): string {
+  if (
+    !Number.isSafeInteger(amountMinor) ||
+    amountMinor <= 0
+  ) {
+    throw new Error(
+      "amountMinor must be a positive safe integer",
+    );
+  }
+
+  const wholePart = Math.trunc(
+    amountMinor / MINOR_UNITS_PER_LKR,
+  );
+
+  const fractionalPart = (
+    amountMinor % MINOR_UNITS_PER_LKR
+  )
+    .toString()
+    .padStart(2, "0");
+
+  return fractionalPart === "00"
+    ? wholePart.toString()
+    : `${wholePart}.${fractionalPart}`;
+}
+
 export function parseMoneyInput(
   text: string,
 ): ParseMoneyInputResult {

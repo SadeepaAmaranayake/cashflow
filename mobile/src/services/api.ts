@@ -161,3 +161,13 @@ export function getApiErrorMessage(
 
   return "Something went wrong. Please try again.";
 }
+
+export function getApiErrorStatus(
+  error: unknown,
+): number | undefined {
+  if (!isAxiosError(error)) {
+    return undefined;
+  }
+
+  return error.response?.status;
+}
