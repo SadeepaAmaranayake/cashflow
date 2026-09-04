@@ -4,6 +4,7 @@ import {
   Stack,
   ThemeProvider,
 } from "expo-router";
+import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import {
   ActivityIndicator,
@@ -53,6 +54,14 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [iconFontsLoaded, iconFontError] = useFonts({
+    MaterialIcons: require("@react-native-vector-icons/material-icons/fonts/MaterialIcons.ttf"),
+    "MaterialIcons-Regular": require("@react-native-vector-icons/material-icons/fonts/MaterialIcons.ttf"),
+  });
+
+  if (!iconFontsLoaded && !iconFontError) {
+    return null;
+  }
 
   return (
     <AuthProvider>
