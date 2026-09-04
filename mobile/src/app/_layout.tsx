@@ -27,7 +27,7 @@ function RootNavigator() {
     isAuthenticated,
     isLoading,
   } = useAuth();
-
+  
   useNotificationRuntime(isAuthenticated);
 
   if (isLoading) {

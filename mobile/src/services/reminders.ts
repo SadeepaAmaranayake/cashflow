@@ -350,9 +350,13 @@ export function observeNotificationTaps(
     }
 
     openRoute(route);
+
+    // Prevent the same tap from navigating again
+    // when the component mounts another time.
     Notifications.clearLastNotificationResponse();
   }
 
+  // Handles a notification that opened a closed app.
   const lastResponse =
     Notifications.getLastNotificationResponse();
 
@@ -360,6 +364,8 @@ export function observeNotificationTaps(
     handleResponse(lastResponse);
   }
 
+  // Handles taps while the app is already running
+  // or in the background.
   const subscription =
     Notifications.addNotificationResponseReceivedListener(
       handleResponse,
@@ -369,3 +375,8 @@ export function observeNotificationTaps(
     subscription.remove();
   };
 }
+
+// addNotificationResponseReceivedListener() handles new notification taps.
+// getLastNotificationResponse() handles a notification that launched a closed app.
+// Only "/add" is accepted. Do not navigate to arbitrary strings stored in notification data.
+// Clearing the last response prevents repeated navigation.
