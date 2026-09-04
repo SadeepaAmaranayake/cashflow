@@ -12,7 +12,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { AnimatedSplashOverlay } from "@/components/animated-icon";
+import { useEffect } from "react";
 import {
   AuthProvider,
   useAuth,
@@ -59,6 +59,19 @@ export default function RootLayout() {
     "MaterialIcons-Regular": require("@react-native-vector-icons/material-icons/fonts/MaterialIcons.ttf"),
   });
 
+  const appIsReady =
+  iconFontsLoaded || Boolean(iconFontError);
+
+  useEffect(() => {
+    if (appIsReady) {
+      void SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
+  }
+
   if (!iconFontsLoaded && !iconFontError) {
     return null;
   }
@@ -73,7 +86,6 @@ export default function RootLayout() {
         }
       >
         <RootNavigator />
-        <AnimatedSplashOverlay />
       </ThemeProvider>
     </AuthProvider>
   );
