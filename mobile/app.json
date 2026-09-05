@@ -2,7 +2,7 @@
   "expo": {
     "name": "Cashflow",
     "slug": "sadeepa",
-    "scheme": "Cashflow",
+    "scheme": "cashflow",
     "description": "A student-focused personal finance tracker for recording income and expenses.",
     "version": "1.0.0",
     "orientation": "portrait",
