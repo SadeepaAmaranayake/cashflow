@@ -1,0 +1,78 @@
+name: Cashflow CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    name: Server checks
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server dependencies
+        run: npm ci
+
+      - name: Check server TypeScript
+        run: npm run check
+
+      - name: Run server tests
+        run: npm test
+
+      - name: Build server
+        run: npm run build
+
+  mobile:
+    name: Mobile checks
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install mobile dependencies
+        run: npm ci
+
+      - name: Check Expo dependencies
+        run: npx expo-doctor
+
+      - name: Check mobile TypeScript
+        run: npx tsc --noEmit
+
+      - name: Lint mobile code
+        run: npm run lint
+
+      - name: Run mobile tests
+        run: npm test -- --runInBand
