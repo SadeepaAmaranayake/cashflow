@@ -479,7 +479,3 @@ The production profile automatically increments the Android version code. Buildi
 - Currency conversion and multi-currency accounts are not implemented.
 - iOS has been bundle-checked but not manually tested or submitted.
 - Store privacy policy, data-safety form, final listing assets, and production monitoring remain external release work.
-
-## License
-
-The server package currently declares ISC. Add a root license that clearly covers the complete repository before public distribution.
