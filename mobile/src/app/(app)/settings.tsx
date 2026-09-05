@@ -155,7 +155,7 @@ export default function SettingsScreen() {
       ) {
         Alert.alert(
           "Notifications are disabled",
-          "You can enable notifications for CampusCash in the phone settings.",
+          "You can enable notifications for Cashflow in the phone settings.",
           [
             { text: "Cancel", style: "cancel" },
             {

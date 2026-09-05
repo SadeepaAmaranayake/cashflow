@@ -8,7 +8,7 @@ $blue = [System.Drawing.ColorTranslator]::FromHtml("#208AEF")
 $white = [System.Drawing.Color]::White
 $transparent = [System.Drawing.Color]::Transparent
 
-function Draw-CampusCashMark {
+function Draw-CashMark {
     param(
         [System.Drawing.Graphics]$Graphics,
         [System.Drawing.Color]$Color
@@ -60,7 +60,7 @@ function Draw-CampusCashMark {
     }
 }
 
-function Write-CampusCashAsset {
+function Write-CashAsset {
     param(
         [string]$FileName,
         [int]$Size,
@@ -81,7 +81,7 @@ function Write-CampusCashAsset {
 
         $scale = $Size / 1024.0
         $graphics.ScaleTransform($scale, $scale)
-        Draw-CampusCashMark -Graphics $graphics -Color $white
+        Draw-CashMark -Graphics $graphics -Color $white
 
         $outputPath = Join-Path $assetDirectory $FileName
         $bitmap.Save(
@@ -95,15 +95,15 @@ function Write-CampusCashAsset {
     }
 }
 
-Write-CampusCashAsset -FileName "icon.png" `
+Write-CashAsset -FileName "icon.png" `
     -Size 1024 -HasBlueBackground $true
-Write-CampusCashAsset -FileName "splash-icon.png" `
+Write-CashAsset -FileName "splash-icon.png" `
     -Size 1024 -HasBlueBackground $false
-Write-CampusCashAsset -FileName "android-icon-foreground.png" `
+Write-CashAsset -FileName "android-icon-foreground.png" `
     -Size 1024 -HasBlueBackground $false
-Write-CampusCashAsset -FileName "android-icon-monochrome.png" `
+Write-CashAsset -FileName "android-icon-monochrome.png" `
     -Size 1024 -HasBlueBackground $false
-Write-CampusCashAsset -FileName "favicon.png" `
+Write-CashAsset -FileName "favicon.png" `
     -Size 512 -HasBlueBackground $true
 
-Write-Output "CampusCash brand assets generated in $assetDirectory"
+Write-Output "Cashflow brand assets generated in $assetDirectory"

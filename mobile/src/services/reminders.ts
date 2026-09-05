@@ -200,7 +200,7 @@ export async function scheduleDailyReminder(
   const scheduleId =
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "CampusCash daily review",
+        title: "Cashflow daily review",
         body: "Have you recorded today's spending?",
         sound: "default",
         data: {
@@ -283,7 +283,7 @@ export async function scheduleTestNotification(
   const scheduleId =
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "CampusCash daily review",
+        title: "Cashflow daily review",
         body: "Have you recorded today's spending?",
         sound: "default",
         data: {

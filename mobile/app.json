@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "Cashflow",
     "slug": "sadeepa",
-    "scheme": "Cahflow",
+    "scheme": "Cashflow",
+    "description": "A student-focused personal finance tracker for recording income and expenses.",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,6 +15,7 @@
     },
     "android": {
       "package": "com.sadeepa.cashflow",
+      "allowBackup": false,
       "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
         "backgroundColor": "#208AEF",
@@ -31,7 +33,13 @@
       "expo-router",
       "expo-secure-store",
       "expo-image",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "color": "#208AEF",
+          "defaultChannel": "daily-reminder"
+        }
+      ],
       [
         "expo-splash-screen",
         {

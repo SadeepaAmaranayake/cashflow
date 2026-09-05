@@ -31,7 +31,7 @@ export function useNotificationRuntime(
         }
 
         // Makes a notification display as a banner while
-        // CampusCash is open.
+        // Cashflow is open.
         reminders.configureNotificationHandler();
 
         // Only enter the protected Add screen after

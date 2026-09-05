@@ -69,7 +69,7 @@ jobs:
         run: npx expo-doctor
 
       - name: Check mobile TypeScript
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: Lint mobile code
         run: npm run lint
